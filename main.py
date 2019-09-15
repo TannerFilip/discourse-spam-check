@@ -1,8 +1,14 @@
 #!/usr/bin/python3
 import requests
 import config
-import pprint
+import pprint # debugging
 import json
+from colorama import init, Fore, Back, Style
+import webbrowser
+import sys
+
+init() # initialize colorama
+
 pp = pprint.PrettyPrinter(indent=4)
 
 dd = config.DISCOURSE_DOMAIN
@@ -51,14 +57,49 @@ def get_silenced_users():
     return silenced_users_full
 
 
+def get_user_action(scan_username):
+
+    while True:
+        user_action = input(': ')
+        if user_action.lower() == 's':
+            break
+        elif user_action.lower() == 'd':
+            print('Really delete? There is no undo!')
+            print('Type \'y\' and press return to delete.')
+            confirmation = input()
+            if confirmation.lower == 'y':
+                print('TODO: delete')
+            else:
+                print('Not deleting...')
+                break
+            break
+        elif user_action.lower() == 'o':
+            webbrowser.open_new_tab(dd+'/u/'+scan_username)
+            continue
+        elif user_action.lower() == 'x':
+            print('Quitting...' + Fore.RESET)
+            sys.exit(0)
+        else:
+            print(Fore.RED + 'Invalid command.' + Fore.RESET)
+            pass
+       
+    return user_action
+
+
 
 def scan_suspect_users():
     suspect_users = get_suspect_users() # have to make the list first
     for usrs in suspect_users:
         scan_username = suspect_users[usrs]['username']
         scan_user = requests.get(dd+'/u/'+scan_username+'.json', headers=req_headers).json()
-        print('Found user: ' + scan_username)
-        pp.pprint('User bio: ' + str(scan_user['user']['bio_raw']))
+        print(Fore.RED + 'Found user: ' + scan_username + Fore.RESET)
+        print('User bio: ')
+        pp.pprint(str(scan_user['user']['bio_raw']))
+        
+        print(Fore.YELLOW + 'What would you like to do?')
+        print('[S]kip, [d]elete and block IP, [o]pen in browser, e[x]it' + Fore.RESET)
+        
+        get_user_action(scan_username)
 
 
 #suspect_users = get_suspect_users()
