@@ -10,4 +10,6 @@ TODO
 
 * Docs
 * User whitelist
+* Dry-run
+* 
 * ???

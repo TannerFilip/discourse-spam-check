@@ -1,1 +1,10 @@
+# http://editorconfig.org
+
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+charset = utf-8
 end_of_line = lf
