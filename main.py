@@ -41,26 +41,29 @@ def get_suspect_users():
 
 
 def get_silenced_users():
-    i = 1
-    silenced_users_full = []
-    silenced_users = []
+    pgNum = 1
+    silenced_users_full = {}
     silenced_len = 0
+    i = 0
 
     execute = True
     while execute:
-        silenced_users = requests.get(dd+'/admin/users/list/silenced.json?page='+str(i), headers=req_headers).json()
+        silenced_users = requests.get(dd+'/admin/users/list/silenced.json?page='+str(pgNum), headers=req_headers).json()
 
-        silenced_users_full = silenced_users_full.append(silenced_users)
-        i += 1
+        for usrs in silenced_users:
+            silenced_users_full[i] = silenced_users[i]
+            i += 1
+
+        pgNum += 1
         silenced_len = len(silenced_users)
         if silenced_len <= 0:
             execute = False
-
     return silenced_users_full
 
 
+
 def delete_user(scan_username, scan_userid):
-    print('Really delete? There is no undo!')
+    print('Really delete '+scan_username+'? There is no undo!')
     print('Type \'y\' and press return to delete.')
     confirmation = input()
     if confirmation.lower() == 'y':
@@ -114,6 +117,28 @@ def scan_suspect_users():
         print('User ID: ' + scan_userid)
         print('User bio: ')
         pp.pprint(str(scan_user['user']['bio_raw']))
+
+        print(Fore.YELLOW + 'What would you like to do?')
+        print('[S]kip, [d]elete and block IP, [o]pen in browser, [q]uit' + Fore.RESET)
+
+        get_user_action(scan_username, scan_userid)
+
+
+
+def scan_silenced_users():
+    silenced_users = get_silenced_users()
+    for usrs in silenced_users:
+        scan_username = silenced_users[usrs]['username']
+        scan_userid = str(silenced_users[usrs]['id'])
+        scan_user = requests.get(dd+'/u/'+scan_username+'.json', headers=req_headers).json()
+        print(Fore.RED + 'Found user: ' + scan_username + Fore.RESET)
+        print('User ID: ' + scan_userid)
+        print('User bio: ')
+        try:
+            print(str(scan_user['user']['bio_raw']))
+        except:
+            print('User has no bio.')
+            pass
 
         print(Fore.YELLOW + 'What would you like to do?')
         print('[S]kip, [d]elete and block IP, [o]pen in browser, [q]uit' + Fore.RESET)
