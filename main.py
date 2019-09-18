@@ -55,6 +55,7 @@ def get_silenced_users():
 
     pg_num = 1
     silenced_users_full = {}
+    silenced_len = 0
     i = 0
 
     execute = True
@@ -80,13 +81,19 @@ def delete_user(scan_username, scan_userid):
     2.if accepted delete a user, blocking their email, IP, and any URLs they posted
     """
 
+    #  Hacky workaround to override the username shown under "context" in the admin log
+    if config.USERNAME_OVERRIDE:
+        context_username = config.USERNAME_OVERRIDE
+    else:
+        context_username = config.API_USERNAME
+
     print('Really delete '+scan_username+'? There is no undo!')
     print('Type \'y\' and press return to delete.')
     confirmation = input()
     if confirmation.lower() == 'y':
         try:
             requests.delete(dd + '/admin/users/' + scan_userid + '.json', headers=REQ_HEADERS, params={
-                'context': 'Determined to be a spammer by ' + config.API_USERNAME + ' (using discourse-spam-check)',
+                'context': 'Determined by ' + context_username + ' to be a spammer. (using discourse-spam-check)',
                 'block_email': 'true',
                 'block_urls': 'true',
                 'block_ip': 'true',
@@ -137,7 +144,15 @@ def scan_suspect_users():
         print(Fore.RED + 'Found user: ' + scan_username + Fore.RESET)
         print('User ID: ' + scan_userid)
         print('User bio: ')
-        pp.pprint(str(scan_user['user']['bio_raw']))
+        try:
+            print(str(scan_user['user']['bio_raw']))
+        except KeyError:
+            pass
+        try:
+            print('Website: ')
+            pp.pprint(scan_user['user']['website'] + ' - ' + scan_user['user']['website_name'])
+        except KeyError:
+            pass
 
         print(Fore.YELLOW + 'What would you like to do?')
         print('[S]kip, [d]elete and block IP, [o]pen in browser, [q]uit' + Fore.RESET)
@@ -159,7 +174,12 @@ def scan_silenced_users():
         try:
             print(str(scan_user['user']['bio_raw']))
         except KeyError:
-            print('User has no bio.')
+            pass
+        try:
+            print('Website: ')
+            pp.pprint(scan_user['user']['website'] + ' - ' + scan_user['user']['website_name'])
+        except KeyError:
+            pass
 
         print(Fore.YELLOW + 'What would you like to do?')
         print('[S]kip, [d]elete and block IP, [o]pen in browser, [q]uit' + Fore.RESET)
