@@ -44,6 +44,7 @@ def get_suspect_users():
             i += 1
 
         pg_num += 1
+        i = 0
         suspect_len = len(suspect_users)
         if suspect_len <= 0:
             execute = False
@@ -69,6 +70,7 @@ def get_silenced_users():
             i += 1
 
         pg_num += 1
+        i = 0
         silenced_len = len(silenced_users)
         if silenced_len <= 0:
             execute = False
@@ -168,6 +170,7 @@ def scan_silenced_users():
         scan_username = silenced_users[usrs]['username']
         scan_userid = str(silenced_users[usrs]['id'])
         scan_user = requests.get(dd + '/u/' + scan_username + '.json', headers=REQ_HEADERS).json()
+        silence_info = requests.get(dd + '/admin/users/' + scan_userid + scan_username + '.json', headers=REQ_HEADERS).json()
         print(Fore.RED + 'Found user: ' + scan_username + Fore.RESET)
         print('User ID: ' + scan_userid)
         print('User bio: ')
@@ -180,6 +183,14 @@ def scan_silenced_users():
             pp.pprint(scan_user['user']['website'] + ' - ' + scan_user['user']['website_name'])
         except KeyError:
             pass
+        try:
+            pp.pprint('Silenced by ' + silence_info['silenced_by']['username'])
+        except KeyError:
+            print('Silencer unknown.')
+        try:
+            pp.pprint('Reason: ' + silence_info['silence_reason'])
+        except TypeError:
+            print('Reason unknown.')
 
         print(Fore.YELLOW + 'What would you like to do?')
         print('[S]kip, [d]elete and block IP, [o]pen in browser, [q]uit' + Fore.RESET)
