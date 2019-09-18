@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import argparse
-import pprint
 import sys
 import webbrowser
 
@@ -10,8 +9,6 @@ from colorama import init, Fore
 import config
 
 init()  # initialize colorama
-
-pp = pprint.PrettyPrinter(indent=4)
 
 dd = config.DISCOURSE_DOMAIN
 REQ_HEADERS = {'Api-Key': config.API_KEY,
@@ -152,7 +149,7 @@ def scan_suspect_users():
             pass
         try:
             print('Website: ')
-            pp.pprint(scan_user['user']['website'] + ' - ' + scan_user['user']['website_name'])
+            print(scan_user['user']['website'] + ' - ' + scan_user['user']['website_name'])
         except KeyError:
             pass
 
@@ -170,7 +167,7 @@ def scan_silenced_users():
         scan_username = silenced_users[usrs]['username']
         scan_userid = str(silenced_users[usrs]['id'])
         scan_user = requests.get(dd + '/u/' + scan_username + '.json', headers=REQ_HEADERS).json()
-        silence_info = requests.get(dd + '/admin/users/' + scan_userid + scan_username + '.json', headers=REQ_HEADERS).json()
+        silence_info = requests.get(dd + '/admin/users/' + scan_userid + '.json', headers=REQ_HEADERS).json()
         print(Fore.RED + 'Found user: ' + scan_username + Fore.RESET)
         print('User ID: ' + scan_userid)
         print('User bio: ')
@@ -180,15 +177,15 @@ def scan_silenced_users():
             pass
         try:
             print('Website: ')
-            pp.pprint(scan_user['user']['website'] + ' - ' + scan_user['user']['website_name'])
+            print(scan_user['user']['website'] + ' - ' + scan_user['user']['website_name'])
         except KeyError:
             pass
         try:
-            pp.pprint('Silenced by ' + silence_info['silenced_by']['username'])
-        except KeyError:
+            print('Silenced by ' + silence_info['silenced_by']['username'])
+        except (KeyError, TypeError):
             print('Silencer unknown.')
         try:
-            pp.pprint('Reason: ' + silence_info['silence_reason'])
+            print('Reason: ' + silence_info['silence_reason'])
         except TypeError:
             print('Reason unknown.')
 
